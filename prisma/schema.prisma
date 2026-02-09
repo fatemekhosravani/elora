@@ -1,0 +1,253 @@
+// Elora - Beauty Services Marketplace
+// Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Role {
+  CUSTOMER
+  VENDOR_OWNER
+  STAFF
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  COMPLETED
+  CANCELLED_BY_USER
+  CANCELLED_BY_VENDOR
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+model User {
+  id          String   @id @default(cuid())
+  phoneNumber String   @unique
+  fullName    String?
+  email       String?  @unique
+  role        Role     @default(CUSTOMER)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  vendor       Vendor?       // Optional: User can own one Vendor profile
+  bookings     Booking[]     // Bookings made by this user as a customer
+  transactions Transaction[] // Payment transactions
+
+  @@index([phoneNumber])
+  @@map("users")
+}
+
+model Vendor {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique // For SEO-friendly URLs
+  address     String
+  bio         String?  
+  logoUrl     String?
+  phoneNumber String?
+  
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  ownerId  String @unique
+  owner    User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  services Service[]
+  staff    Staff[]
+  bookings Booking[]
+
+  @@index([slug])
+  @@index([ownerId])
+  @@map("vendors")
+}
+
+model Service {
+  id              String  @id @default(cuid())
+  name            String
+  description     String? 
+  price           Float // Total price
+  depositAmount   Float // Deposit required for booking
+  durationMinutes Int     // Service duration in minutes
+  
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  staffServices StaffService[] // Many-to-many with Staff
+  bookings      Booking[]
+
+  @@index([vendorId])
+  @@map("services")
+}
+
+model Staff {
+  id        String   @id @default(cuid())
+  name      String
+  bio       String?  
+  avatarUrl String?
+  
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  staffServices StaffService[]  // Many-to-many with Service
+  schedules     StaffSchedule[]
+  bookings      Booking[]
+
+  @@index([vendorId])
+  @@map("staff")
+}
+
+// Many-to-many pivot table for Staff and Service
+model StaffService {
+  id String @id @default(cuid())
+
+  staffId   String
+  staff     Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([staffId, serviceId])
+  @@index([staffId])
+  @@index([serviceId])
+  @@map("staff_services")
+}
+
+model StaffSchedule {
+  id        String @id @default(cuid())
+  
+  // dayOfWeek: 0 = Sunday, 1 = Monday, ..., 6 = Saturday (ISO standard)
+  // For Persian/Jalaali context: 0 = Saturday (شنبه) would need frontend mapping
+  dayOfWeek Int    // 0-6
+  
+  // Time stored as "HH:mm" format (e.g., "09:00", "17:30")
+  startTime String
+  endTime   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  staffId String
+  staff   Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([staffId])
+  @@index([dayOfWeek])
+  @@map("staff_schedules")
+}
+
+model Booking {
+  id         String        @id @default(cuid())
+  
+  // Booking time (stored in UTC)
+  startTime  DateTime
+  endTime    DateTime
+  
+  // Pricing
+  totalPrice  Float
+  depositPaid Float @default(0)
+  
+  status     BookingStatus @default(PENDING_PAYMENT)
+  
+  // Additional info
+  notes      String?       
+  
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  // Relations
+  customerId String
+  customer   User   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  vendorId String
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  staffId String
+  staff   Staff  @relation(fields: [staffId], references: [id], onDelete: Restrict)
+
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  transactions Transaction[]
+
+  @@index([customerId])
+  @@index([vendorId])
+  @@index([staffId])
+  @@index([serviceId])
+  @@index([startTime])
+  @@index([status])
+  @@map("bookings")
+}
+
+model Transaction {
+  id           String            @id @default(cuid())
+  
+  amount       Float
+  trackingCode String?           @unique // Payment gateway tracking code
+  status       TransactionStatus @default(PENDING)
+  
+  // Payment gateway metadata
+  gatewayResponse String?        
+  
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([bookingId])
+  @@index([status])
+  @@index([trackingCode])
+  @@map("transactions")
+}
+
+model VerificationCode {
+  id          String   @id @default(cuid())
+  phoneNumber String   @unique
+  code        String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([phoneNumber])
+  @@map("verification_codes")
+}
+

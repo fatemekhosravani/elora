@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-primary: #e6195d;
+  --color-dusty-pink: #D4A3A3;
+  --color-soft-gold: #D4AF37;
+  --color-charcoal: #333333;
+  --color-background-light: #fcf8f9;
+  --color-background-dark: #211116;
+  
+  --color-brand-primary: #e6195d;
+  --color-brand-secondary: #D4AF37;
+  --color-brand-dark: #333333;
+  --color-brand-bg: #fcf8f9;
+
+  /* Fonts */
+  --font-family-sans: var(--font-vazir), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-family-display: var(--font-vazir), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-family-body: var(--font-vazir), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  /* Border Radius */
+  --radius: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Vazirmatn', var(--font-vazir), sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.filled-icon {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
