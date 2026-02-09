@@ -1,0 +1,47 @@
+elora/
+├── src/
+│   ├── app/
+│   │   ├── (admin)/                    # Admin Route Group
+│   │   │   ├── layout.tsx              # Admin layout
+│   │   │   └── dashboard/
+│   │   │       └── page.tsx            # Admin dashboard page
+│   │   │
+│   │   ├── (auth)/                     # Authentication Route Group
+│   │   │   ├── layout.tsx              # Minimal auth layout
+│   │   │   └── login/
+│   │   │       └── page.tsx            # Login/OTP page
+│   │   │
+│   │   ├── (dashboard)/                # Customer & Vendor Route Group
+│   │   │   ├── layout.tsx              # Dashboard layout
+│   │   │   ├── panel/
+│   │   │   │   └── page.tsx            # Customer panel
+│   │   │   └── vendor-panel/
+│   │   │       └── page.tsx            # Vendor panel
+│   │   │
+│   │   ├── (public)/                   # Public Route Group
+│   │   │   ├── layout.tsx              # Public layout (Navbar + Footer)
+│   │   │   ├── landing/
+│   │   │   │   └── page.tsx            # Landing page
+│   │   │   └── search/
+│   │   │       └── page.tsx            # Search page
+│   │   │
+│   │   ├── globals.css                 # Global styles + Tailwind
+│   │   ├── layout.tsx                  # Root layout (Font + RTL)
+│   │   └── page.tsx                    # Root page (/)
+│   │
+│   ├── components/
+│   │   ├── ui/
+│   │   │   └── index.ts                # UI components (Button, Input, etc.)
+│   │   └── layout/
+│   │       └── index.ts                # Layout components (Header, Sidebar, etc.)
+│   │
+│   └── lib/
+│       └── utils.ts                    # Utility functions (cn helper)
+│
+├── package.json                        # Dependencies
+├── tsconfig.json                       # TypeScript configuration
+├── tailwind.config.ts                  # Tailwind configuration
+├── next.config.ts                      # Next.js configuration
+├── postcss.config.mjs                  # PostCSS configuration
+├── .gitignore                          # Git ignore rules
+└── README.md                           # Project documentation
